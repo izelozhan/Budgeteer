@@ -9,61 +9,46 @@ import Observation
 import SwiftUI
 
 
-@Observable
-class User {
-    var firstName = "Bilbo"
-    var lastName = "Baggins"
+struct ExpenseItem: Identifiable{
+    let id = UUID()
+    let name: String
+    let type: String
+    let amount: Double
 }
 
-struct SecondView: View {
-    @Environment(\.dismiss) var dismiss
-    
-    var body: some View {
-        Button("Dismiss") {
-            dismiss()
-        }
-    }
-    
+@Observable
+class Expenses {
+    var items = [ExpenseItem]()
 }
 
 struct ContentView: View {
-    @State private var user = User()
-    @State private var showingSheet = false
-    @State private var numbers = [Int]()
-    @State private var currentNumber = 1
+    @State private var expenses = Expenses()
+    
     
     var body: some View {
         NavigationStack {
-            VStack {
-                List {
-                    ForEach(numbers, id: \.self){
-                        Text("Row \($0)")
-                    }
-                    .onDelete(perform: removeRows)
+            List {
+                ForEach(expenses.items) { item in
+                    Text(item.name)
+                }
+                .onDelete(perform: removeItems)
+            }
+            .navigationTitle("Budgeteer")
+            .toolbar {
+                Button("Add Expense", systemImage: "plus") {
+                    let expense = ExpenseItem(name: "Test Item", type: "Personal", amount: 5)
+                    expenses.items.append(expense)
                 }
             }
-        }.toolbar {
-            EditButton()
         }
         
-        Button("Add number") {
-            numbers.append(currentNumber)
-            currentNumber += 1
-        }
-        Spacer()
-        
-        Button("Show Sheet") {
-            showingSheet.toggle()
-        }
-        .sheet(isPresented: $showingSheet) {
-            SecondView()
-        }
     }
     
-    func removeRows(at offset: IndexSet) {
-        numbers.remove(atOffsets: offset)
+    func removeItems(at offsets: IndexSet) {
+        expenses.items.remove(atOffsets: offsets)
     }
 }
+
 
 #Preview {
     ContentView()
